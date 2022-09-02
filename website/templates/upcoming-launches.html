@@ -4,4 +4,27 @@
 
 {% block main %} 
     <h2>Upcoming Launches</h2>
+
+    {% for launch in launches_info %}
+        <div class="container-fluid"> 
+            <div class="card mx-auto" style="width: 24rem;">
+                <img class="card-img-top" src="{{ launch['image'] }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ launch.name }}</h5>
+                    <h6 class="card-subtitle">{{ launch.lsp_name }}</h6>
+                    <h6 class="card-subtitle">{{ launch.rocket_name }}</h6>
+                    <h6 class="card-subtitle">{{ launch.location_name }}</h6>
+                    <h6 class="card-text">{{ launch.window_start }}</h6>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+
+    <form action="/upcoming-launches" method="post">
+        <div class="mb-3">
+            <input class="form control mx-auto w-auto" id="offset" name="offset" placeholder="Offset" type="number">
+        </div>
+        <button class="btn btn-primary" type="submit">Submit</button>
+    </form>
+
 {% endblock %} 
