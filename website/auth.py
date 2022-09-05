@@ -49,7 +49,7 @@ def register():
             flash('Username already exists, choose another!', category='error')
 
         # Check if info entered is acceptable 
-        if len(username) < 3:
+        elif len(username) < 3:
             flash('Username must be greater than 2 characters.', category='error')
         elif username == "" or password == "" or confirmation == "":
             flash('Must fill all fields.', category='error')
@@ -61,7 +61,8 @@ def register():
             # Add user to database 
             db.session.add(new_user)
             db.session.commit()
-            login_user(user, remember=True)
+
+            login_user(new_user, remember=True)
             flash('Account created!', category='success')
 
             return redirect(url_for('views.home'))

@@ -14,7 +14,7 @@ def get_launches_info(url):
 
         info = {}
 
-        info['id'] = result["id"]
+        info['slug'] = result["slug"]
         info['url'] = result["url"]
         info['name'] = result["name"]
         info['lsp_name'] = result['launch_service_provider']['name']
@@ -22,11 +22,7 @@ def get_launches_info(url):
         info['location_name'] = result['pad']['name']
         info['image'] = result['image']
         info['window_start'] = result['window_start']
-        #info['next'] = result['next']
-        #info['previous'] = result['previous']
 
         launches_info.append(info)
 
-    #print(launches)
-
-get_launches_info("https://ll.thespacedevs.com/2.2.0/launch/upcoming/?format=json")
+    return launches_info

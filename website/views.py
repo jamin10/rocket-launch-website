@@ -1,10 +1,12 @@
-from flask import Blueprint, render_template, request
+from re import L
+from unicodedata import category
+from flask import Blueprint, render_template, request, jsonify, flash
 from flask_login import login_required, current_user
+import json
 import requests
-
-#from website.helpers import get_launches_info
-
-
+from .models import Launch, User
+from .helpers import *
+from . import db
 
 views = Blueprint('views', __name__)
 
@@ -20,17 +22,18 @@ def upcoming_launches():
 
     if request.method == 'POST':
 
+        # Base url 
         url = "https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?format=json"
 
+        # Offset for which results to show on page 
         offset = request.form.get("offset")
         if offset == None:
             offset = 0
         else:
             pass
 
+        # Adjust URL for API request 
         url = url + "&limit=10&offset=" + offset
-        print(url)
-
         launches_info = get_launches_info(url)
 
         return render_template("upcoming-launches.html", user=current_user, launches_info=launches_info)
@@ -42,16 +45,43 @@ def upcoming_launches():
         return render_template("upcoming-launches.html", user=current_user, launches_info=launches_info)
 
 
-@views.route('/past-launches')
+@views.route('/past-launches', methods=["GET", "POST"])
 @login_required
 def past_launches():
-    return render_template("past-launches.html", user=current_user)
+
+    if request.method == 'POST':
+
+        # Base url 
+        url = "https://lldev.thespacedevs.com/2.2.0/launch/?format=json"
+
+        # Offset for which results to show on page 
+        offset = request.form.get("offset")
+        if offset == None:
+            offset = 0
+        else:
+            pass
+
+        # Adjust URL for API request 
+        url = url + "&limit=10&offset=" + offset
+        launches_info = get_launches_info(url)
+
+        return render_template("past-launches.html", user=current_user, launches_info=launches_info)
+
+    else:
+
+        launches_info = get_launches_info("https://lldev.thespacedevs.com/2.2.0/launch/?format=json")
+
+        return render_template("past-launches.html", user=current_user, launches_info=launches_info)
 
 
 @views.route('/bookmarked-upcoming')
 @login_required
 def bookmarked_upcoming():
-    return render_template("bookmarked-upcoming.html", user=current_user)
+
+    # Order launches by window start time 
+    ordered_launches = Launch.query.filter_by(user_id=current_user.id).order_by(Launch.window_start)
+
+    return render_template("bookmarked-upcoming.html", user=current_user, launches=ordered_launches)
 
 
 @views.route('/bookmarked-past')
@@ -60,27 +90,47 @@ def bookmarked_past():
     return render_template("bookmarked-past.html", user=current_user)
 
 
-# Functions 
-def get_launches_info(url):
-    response = requests.get(url)
-    launches = response.json()
-    results = launches['results']
+@views.route('/bookmark-launch', methods=['POST'])
+def bookmark_launch():
+    # Get data from button click 
+    launch = json.loads(request.data)
+    launchSlug = launch['slug']
 
-    launches_info = []
+    # Check if already bookmarked 
+    launch = Launch.query.get(launchSlug)
+    if launch:
+        if launch.user_id == current_user.id:
+            flash('Launch already bookmarked!', category='error')
+            return jsonify({})
 
-    for result in results:
+    # Search API with slug to retrieve data to be stored in database 
+    url = "https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?format=json" + f"&slug={launchSlug}"
+    launches_info = get_launches_info(url)
+    info = launches_info[0]
+    
+    # Add data to database 
+    new_bookmark = Launch(slug=launchSlug, name=info["name"], lsp_name=info['lsp_name'], rocket_name=info['rocket_name'], \
+        location_name=info['location_name'], image=info['image'], window_start=info['window_start'], user_id=current_user.id)
+    db.session.add(new_bookmark)
+    db.session.commit()
+    flash('Launch bookmarked!', category='success')
 
-        info = {}
+    # Return empty response 
+    return jsonify({})
 
-        info['id'] = result["id"]
-        info['url'] = result["url"]
-        info['name'] = result["name"]
-        info['lsp_name'] = result['launch_service_provider']['name']
-        info['rocket_name'] = result['rocket']['configuration']['name']
-        info['location_name'] = result['pad']['name']
-        info['image'] = result['image']
-        info['window_start'] = result['window_start']
 
-        launches_info.append(info)
+@views.route('/delete-launch', methods=['POST'])
+def delete_launch():
+    # Get data from button click 
+    launch = json.loads(request.data)
+    launchSlug = launch['slug']
 
-    return launches_info
+    # Check if in database and remove 
+    launch = Launch.query.get(launchSlug)
+    if launch:
+        if launch.user_id == current_user.id:
+            db.session.delete(launch)
+            db.session.commit()
+            flash('Bookmark deleted!', category='success')
+
+    return jsonify({})
