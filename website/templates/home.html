@@ -4,4 +4,19 @@
 
 {% block main %} 
     <h2>Home</h2>
+
+    {% for article in news %}
+    <div class="container-fluid"> 
+        <div class="card mx-auto" style="width: 32rem;">
+            <img class="card-img-top" src="{{ article['imageUrl'] }}">
+            <div class="card-body">
+                <h4 class="card-title"><a href="{{ article.url }}">{{ article.title }}</a></h5>
+                <h5 class="card-subtitle">{{ article.newsSite }}</h6>
+                <h6 class="card-text">{{ article.summary }}</h6>
+            </div>
+        </div>
+    </div>
+{% endfor %}
+
+
 {% endblock %} 

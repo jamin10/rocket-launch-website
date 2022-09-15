@@ -15,7 +15,11 @@ views = Blueprint('views', __name__)
 @views.route('/')
 @login_required
 def home():
-    return render_template("home.html", user=current_user)
+
+    url = 'https://api.spaceflightnewsapi.net/v3/articles'
+    news = get_space_news(url)
+
+    return render_template("home.html", user=current_user, news=news)
 
 
 @views.route('/upcoming-launches', methods=["GET", "POST"])

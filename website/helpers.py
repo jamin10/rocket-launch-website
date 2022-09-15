@@ -1,7 +1,6 @@
 import requests
 from datetime import datetime
 
-search = "SpaceX"
 
 def get_launches_info(url):
     response = requests.get(url)
@@ -27,10 +26,20 @@ def get_launches_info(url):
 
     return launches_info
 
+
 def change_to_datetime_object(date_and_time):
 
     datetime_format = date_and_time[:-1].replace('T', ' ')
     date_time_obj = datetime.strptime(datetime_format, '%Y-%m-%d %H:%M:%S')
 
     return date_time_obj
+
+
+def get_space_news(url):
+    response = requests.get(url)
+    news = response.json()
+
+    return news
+
+
 
