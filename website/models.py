@@ -4,7 +4,8 @@ from flask_login import UserMixin
 
 # Set up launch model
 class Launch(db.Model):
-    slug = db.Column(db.String(10000), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
+    slug = db.Column(db.String(10000))
     name = db.Column(db.String(10000))
     lsp_name = db.Column(db.String(10000))
     rocket_name = db.Column(db.String(10000))

@@ -7,6 +7,7 @@ import requests
 from .models import Launch, User
 from .helpers import *
 from . import db
+from datetime import datetime
 
 views = Blueprint('views', __name__)
 
@@ -78,8 +79,10 @@ def past_launches():
 @login_required
 def bookmarked_upcoming():
 
+    now = datetime.now()
+    print(now)
     # Order launches by window start time 
-    ordered_launches = Launch.query.filter_by(user_id=current_user.id).order_by(Launch.window_start)
+    ordered_launches = Launch.query.filter((Launch.user_id==current_user.id), (Launch.window_start>now)).order_by(Launch.window_start)
 
     return render_template("bookmarked-upcoming.html", user=current_user, launches=ordered_launches)
 
@@ -87,7 +90,13 @@ def bookmarked_upcoming():
 @views.route('/bookmarked-past')
 @login_required
 def bookmarked_past():
-    return render_template("bookmarked-past.html", user=current_user)
+
+    now = datetime.now()
+    print(now)
+    # Order launches by window start time 
+    ordered_launches = Launch.query.filter((Launch.user_id==current_user.id), (Launch.window_start<now)).order_by(Launch.window_start)
+
+    return render_template("bookmarked-past.html", user=current_user, launches=ordered_launches)
 
 
 @views.route('/bookmark-launch', methods=['POST'])
@@ -104,7 +113,7 @@ def bookmark_launch():
             return jsonify({})
 
     # Search API with slug to retrieve data to be stored in database 
-    url = "https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?format=json" + f"&slug={launchSlug}"
+    url = "https://lldev.thespacedevs.com/2.2.0/launch/?format=json" + f"&slug={launchSlug}"
     launches_info = get_launches_info(url)
     info = launches_info[0]
     

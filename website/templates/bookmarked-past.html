@@ -4,4 +4,22 @@
 
 {% block main %} 
     <h2>Bookmarked Past Launches</h2>
+
+        {% for launch in launches %}
+        <div class="container-fluid"> 
+            <div class="card mx-auto" style="width: 24rem;">
+                <img class="card-img-top" src="{{ launch['image'] }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ launch.name }}</h5>
+                    <h6 class="card-subtitle">{{ launch.lsp_name }}</h6>
+                    <h6 class="card-subtitle">{{ launch.rocket_name }}</h6>
+                    <h6 class="card-subtitle">{{ launch.location_name }}</h6>
+                    <h6 class="card-text">{{ launch.window_start }}</h6>
+                    <button type="button" class="btn btn-outline-primary" onClick="deleteLaunch('{{ launch.slug }}')">Delete</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </ul>
+
 {% endblock %} 
