@@ -1,3 +1,4 @@
+from ast import keyword
 from re import L
 from unicodedata import category
 from flask import Blueprint, render_template, request, jsonify, flash
@@ -28,6 +29,8 @@ def upcoming_launches():
 
         # Offset for which results to show on page 
         offset = request.form.get("offset")
+        keyword = request.form.get("keyword")
+
         if offset == None:
             offset = 0
         else:
@@ -35,12 +38,18 @@ def upcoming_launches():
 
         # Adjust URL for API request 
         url = url + "&limit=10&offset=" + offset
+
+        # Check if keyword entered and adjust API request
+        if keyword == None:
+            pass
+        else:
+            url = url + "&search=" + keyword
+
         launches_info = get_launches_info(url)
 
         return render_template("upcoming-launches.html", user=current_user, launches_info=launches_info)
 
     else:
-
         launches_info = get_launches_info("https://lldev.thespacedevs.com/2.2.0/launch/upcoming/?format=json")
 
         return render_template("upcoming-launches.html", user=current_user, launches_info=launches_info)
@@ -57,6 +66,8 @@ def past_launches():
 
         # Offset for which results to show on page 
         offset = request.form.get("offset")
+        keyword = request.form.get("keyword")
+
         if offset == None:
             offset = 0
         else:
@@ -64,12 +75,18 @@ def past_launches():
 
         # Adjust URL for API request 
         url = url + "&limit=10&offset=" + offset
+
+        # Check if keyword entered and adjust API request
+        if keyword == None:
+            pass
+        else:
+            url = url + "&search=" + keyword
+
         launches_info = get_launches_info(url)
 
         return render_template("past-launches.html", user=current_user, launches_info=launches_info)
 
     else:
-
         launches_info = get_launches_info("https://lldev.thespacedevs.com/2.2.0/launch/?format=json")
 
         return render_template("past-launches.html", user=current_user, launches_info=launches_info)
@@ -79,9 +96,8 @@ def past_launches():
 @login_required
 def bookmarked_upcoming():
 
-    now = datetime.now()
-    print(now)
     # Order launches by window start time 
+    now = datetime.now()
     ordered_launches = Launch.query.filter((Launch.user_id==current_user.id), (Launch.window_start>now)).order_by(Launch.window_start)
 
     return render_template("bookmarked-upcoming.html", user=current_user, launches=ordered_launches)
@@ -91,9 +107,8 @@ def bookmarked_upcoming():
 @login_required
 def bookmarked_past():
 
-    now = datetime.now()
-    print(now)
-    # Order launches by window start time 
+    # Order launches by window start time
+    now = datetime.now() 
     ordered_launches = Launch.query.filter((Launch.user_id==current_user.id), (Launch.window_start<now)).order_by(Launch.window_start)
 
     return render_template("bookmarked-past.html", user=current_user, launches=ordered_launches)

@@ -27,8 +27,6 @@ https://thespacedevs.com/llapi.
 
 ## Future Improvements
 
-* Add bookmarked past launches functionallity
-* Add filters to launch search
 * Add a homepage with space news
 * Use PostgreSQL for database
 * Run database in separate Docker container 

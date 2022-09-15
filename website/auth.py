@@ -9,23 +9,28 @@ auth = Blueprint('auth', __name__)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
-    if request.method == 'POST':
-        username = request.form.get('username')
-        password = request.form.get('password')
+    if request.method == 'GET':
 
-        user = User.query.filter_by(username=username).first()
-        if user:
-            if check_password_hash(user.password, password):
-                flash('Logged in successfully.', category='success')
-                login_user(user, remember=True)
-                return redirect('/')
-            else:
-                flash('Incorrect username or password.', category='error')
+        return render_template('login.html', user=current_user)
+
+    # Set form entries to variables 
+    username = request.form.get('username')
+    password = request.form.get('password')
+
+    # Check if the username already exists
+    user = User.query.filter_by(username=username).first()
+    if user:
+        # Check if passwords match
+        if check_password_hash(user.password, password):
+            flash('Logged in successfully.', category='success')
+            login_user(user, remember=True)
+            return redirect('/')
         else:
-            flash('Invalid username', category='error')
+            flash('Incorrect username or password.', category='error')
+    else:
+        flash('Invalid username', category='error')
 
-
-    return render_template('login.html', user=current_user)
+    return redirect('/login')
 
 
 @auth.route('/logout')
@@ -37,34 +42,37 @@ def logout():
 
 @auth.route('/register', methods=['GET', 'POST'])
 def register():
-    if request.method == 'POST':
+    if request.method == 'GET':
 
-        # Get variables from form 
-        username = request.form.get('username')
-        password = request.form.get('password')
-        confirmation = request.form.get('confirmation')
+        return render_template('register.html', user=current_user)
 
-        user = User.query.filter_by(username=username).first()
-        if user:
-            flash('Username already exists, choose another!', category='error')
+    # Get variables from form 
+    username = request.form.get('username')
+    password = request.form.get('password')
+    confirmation = request.form.get('confirmation')
 
-        # Check if info entered is acceptable 
-        elif len(username) < 3:
-            flash('Username must be greater than 2 characters.', category='error')
-        elif username == "" or password == "" or confirmation == "":
-            flash('Must fill all fields.', category='error')
-        elif password != confirmation:
-            flash('Passwords must match.', category='error')
-        else:
-            # Create new user with hashed password 
-            new_user = User(username=username, password=generate_password_hash(password, method='sha256'))
-            # Add user to database 
-            db.session.add(new_user)
-            db.session.commit()
+    user = User.query.filter_by(username=username).first()
+    if user:
+        flash('Username already exists, choose another!', category='error')
 
-            login_user(new_user, remember=True)
-            flash('Account created!', category='success')
+    # Check if info entered is acceptable 
+    elif len(username) < 3:
+        flash('Username must be greater than 2 characters.', category='error')
+    elif username == "" or password == "" or confirmation == "":
+        flash('Must fill all fields.', category='error')
+    elif password != confirmation:
+        flash('Passwords must match.', category='error')
+    else:
+        # Create new user with hashed password 
+        new_user = User(username=username, password=generate_password_hash(password, method='sha256'))
+        # Add user to database 
+        db.session.add(new_user)
+        db.session.commit()
 
-            return redirect(url_for('views.home'))
+        # Log in user
+        login_user(new_user, remember=True)
+        flash('Account created!', category='success')
 
-    return render_template('register.html', user=current_user)
+        return redirect(url_for('views.home'))
+
+    return redirect('/register')
