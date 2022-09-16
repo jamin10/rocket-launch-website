@@ -66,7 +66,7 @@ def past_launches():
     if request.method == 'POST':
 
         # Base url 
-        url = "https://lldev.thespacedevs.com/2.2.0/launch/?format=json"
+        url = "https://lldev.thespacedevs.com/2.2.0/launch/previous/?format=json"
 
         # Offset for which results to show on page 
         offset = request.form.get("offset")
@@ -91,7 +91,7 @@ def past_launches():
         return render_template("past-launches.html", user=current_user, launches_info=launches_info)
 
     else:
-        launches_info = get_launches_info("https://lldev.thespacedevs.com/2.2.0/launch/?format=json")
+        launches_info = get_launches_info("https://lldev.thespacedevs.com/2.2.0/launch/previous/?format=json")
 
         return render_template("past-launches.html", user=current_user, launches_info=launches_info)
 
@@ -125,11 +125,11 @@ def bookmark_launch():
     launchSlug = launch['slug']
 
     # Check if already bookmarked 
-    launch = Launch.query.get(launchSlug)
+    launch = Launch.query.filter((Launch.slug==launchSlug), (Launch.user_id==current_user.id)).first()
+    print(launch)
     if launch:
-        if launch.user_id == current_user.id:
-            flash('Launch already bookmarked!', category='error')
-            return jsonify({})
+        flash('Launch already bookmarked!', category='error')
+        return jsonify({})
 
     # Search API with slug to retrieve data to be stored in database 
     url = "https://lldev.thespacedevs.com/2.2.0/launch/?format=json" + f"&slug={launchSlug}"
@@ -151,10 +151,10 @@ def bookmark_launch():
 def delete_launch():
     # Get data from button click 
     launch = json.loads(request.data)
-    launchSlug = launch['slug']
+    launch_id = launch['id']
 
     # Check if in database and remove 
-    launch = Launch.query.get(launchSlug)
+    launch = Launch.query.get(launch_id)
     if launch:
         if launch.user_id == current_user.id:
             db.session.delete(launch)

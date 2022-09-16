@@ -7,10 +7,10 @@ function bookmarkLaunch(slug) {
     });
 }
 
-function deleteLaunch(slug) {
+function deleteLaunch(id) {
     fetch('/delete-launch', {
         method: "POST", 
-        body: JSON.stringify({ slug: slug }), 
+        body: JSON.stringify({ id: id }), 
     }).then((_res) => {
         window.location.href = "/bookmarked-upcoming";
     });
