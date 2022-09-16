@@ -6,7 +6,7 @@ This webapp allows users to read the latest space news, look at past and upcomin
 
 A Dockerfile has been included to run the webapp in a container. Use the following commands while inside the root directory:
 
-1. `docker build -t rocket-launch-website`
+1. `docker build -t rocket-launch-website .`
 2. `docker run -p 5000:5000 -d rocket-launch-website`
 
 Go to 'localhost:5000' in web browser.
